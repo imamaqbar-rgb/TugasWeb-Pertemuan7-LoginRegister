@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Jadwal Harian</title>
+<style>
+:root{--bg:#0b1a10;--green:#3f6b45;--green-d:#2f5236;--line:#a9c7ae;--ink:#1d2b20;--muted:#6b7d6e;--danger:#a63d3d;--r:18px}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;font-family:"Segoe UI",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5}
+.bg{position:fixed;inset:0;z-index:-1}.bg svg{width:100%;height:100%}
+.ic{flex:none;vertical-align:middle}
+:focus-visible{outline:3px solid #ffd479;outline-offset:2px}
+button{font:inherit}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px clamp(14px,4vw,40px);background:rgba(7,20,11,.72);backdrop-filter:blur(8px);position:sticky;top:0;z-index:5}
+.topbar button{display:inline-flex;align-items:center;gap:8px;color:#e8f2ea;background:none;border:0;cursor:pointer;padding:8px 10px;border-radius:10px}
+.topbar button:hover{background:rgba(255,255,255,.12)}
+.brand{font-family:Georgia,serif;font-style:italic;font-size:1.2rem}
+.topbar nav{display:flex;gap:4px}
+.wrap{max-width:1100px;margin:0 auto;padding:clamp(16px,4vw,36px)}
+.wrap.narrow{max-width:560px}
+.hero{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;margin-bottom:28px}
+.hero h1{margin:0;font-family:Georgia,serif;font-style:italic;font-weight:400;font-size:clamp(2.2rem,6vw,3.6rem);color:#fff;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+.meta{display:flex;gap:10px;flex-wrap:wrap}
+.pill{background:#fff;border-radius:14px;padding:8px 16px;display:flex;gap:8px;align-items:baseline;font-family:Georgia,serif;color:var(--muted)}
+.pill strong{color:var(--ink)}
+.week{display:grid;grid-template-columns:repeat(3,1fr);gap:30px 22px}
+.day{position:relative;background:#fff;border:2px solid var(--line);border-radius:var(--r);padding:34px 14px 14px;display:flex;flex-direction:column;min-height:260px}
+.day.today{box-shadow:0 0 0 3px #ffd479}
+.tab{position:absolute;top:-16px;left:50%;transform:translateX(-50%);margin:0;background:var(--green);color:#fff;font-family:Georgia,serif;font-weight:400;font-size:.95rem;letter-spacing:.08em;padding:6px 26px;border-radius:6px 6px 10px 10px}
+.items{list-style:none;margin:0 0 12px;padding:0;flex:1;display:flex;flex-direction:column;gap:8px}
+.items li{display:flex;align-items:center;gap:8px;padding:8px 10px;background:#f3f8f3;border-left:4px solid var(--green);border-radius:8px}
+.items li.empty{background:none;border:0;color:var(--muted);font-style:italic;padding-left:0}
+.time{display:inline-flex;align-items:center;gap:4px;font-size:.8rem;font-weight:600;color:var(--green-d)}
+.ttl{flex:1;overflow-wrap:anywhere;font-size:.95rem}
+.add{display:grid;grid-template-columns:96px 1fr auto;gap:6px}
+input,textarea{font:inherit;color:inherit}
+.add input,.notes textarea{border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;min-width:0;width:100%}
+.icon-btn{display:inline-grid;place-items:center;width:36px;height:36px;border:0;border-radius:10px;background:transparent;color:var(--danger);cursor:pointer}
+.icon-btn:hover{background:#f6e3e3}
+.icon-btn.solid{background:var(--green);color:#fff}.icon-btn.solid:hover{background:var(--green-d)}
+.notes{margin-top:28px;background:#fff;border:2px solid var(--line);border-radius:var(--r);padding:18px}
+.notes label{display:flex;align-items:center;gap:8px;font-family:Georgia,serif;font-size:1.15rem;margin-bottom:8px}
+.notes textarea{resize:vertical;background:repeating-linear-gradient(#fff,#fff 27px,#c9dccb 28px);line-height:28px}
+.notes .btn{margin-top:10px}
+.center{min-height:100vh;display:grid;place-items:center;padding:20px}
+.card{width:100%;max-width:440px;background:#fff;border:2px solid var(--line);border-radius:22px;padding:clamp(22px,5vw,36px);box-shadow:0 20px 60px rgba(0,0,0,.45)}
+.card.flat{max-width:none;box-shadow:none}
+.ttl-box{text-align:center;color:var(--green);margin-bottom:18px}
+.ttl-box h1{margin:6px 0 2px;font-family:Georgia,serif;font-style:italic;font-weight:400;font-size:2rem;color:var(--ink)}
+.ttl-box p{margin:0;color:var(--muted);font-size:.95rem}
+.field{display:block;margin-bottom:14px}
+.lbl{display:block;font-size:.85rem;margin-bottom:4px;color:var(--muted)}
+.inp{display:flex;align-items:center;gap:8px;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;color:var(--green);background:#fff}
+.inp:focus-within{border-color:var(--green);box-shadow:0 0 0 3px rgba(63,107,69,.2)}
+.inp input{flex:1;border:0;outline:0;padding:12px 0;min-width:0;background:transparent;color:var(--ink)}
+.check{display:flex;align-items:center;gap:8px;margin:4px 0 16px;font-size:.92rem;cursor:pointer}
+.check input{width:18px;height:18px;accent-color:var(--green)}
+.btn{width:100%;border:0;border-radius:12px;background:var(--green);color:#fff;padding:13px;font-weight:600;cursor:pointer}
+.btn:hover{background:var(--green-d)}.btn.small{width:auto;padding:9px 18px}
+.alt{text-align:center;margin:16px 0 0;font-size:.92rem}
+.alt a{color:var(--green);cursor:pointer;text-decoration:underline}
+fieldset{border:1.5px dashed var(--line);border-radius:14px;margin:18px 0;padding:12px 14px 2px}
+legend{padding:0 8px;color:var(--green-d);font-family:Georgia,serif}
+.alert{display:flex;gap:10px;align-items:flex-start;padding:11px 14px;border-radius:12px;margin-bottom:12px;font-size:.92rem}
+.alert .ic{margin-top:2px}
+.alert.error{background:#fbeaea;color:#7d2626;border:1px solid #efc4c4}
+.alert.success{background:#e6f3e8;color:#235a30;border:1px solid #bddcc3}
+.wrap>.alert{max-width:620px}
+@media (max-width:900px){.week{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.week{grid-template-columns:1fr}.topbar nav span{display:none}.hero{flex-direction:column;align-items:flex-start}.add{grid-template-columns:90px 1fr auto}}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+<svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice"><defs><radialGradient id="g" cx="50%" cy="40%" r="80%"><stop offset="0" stop-color="#1d3a24"/><stop offset="1" stop-color="#07140b"/></radialGradient>
+<g id="leaf"><path d="M0 0C-120-40-200-160-150-280 -60-330 60-330 150-280 200-160 120-40 0 0Z"/><path d="M0 0V-300M0-60l-90-40M0-60l90-40M0-130l-100-50M0-130l100-50M0-200l-70-50M0-200l70-50" fill="none" stroke="#06110a" stroke-width="7" stroke-linecap="round"/></g></defs>
+<rect width="1200" height="800" fill="url(#g)"/>
+<g fill="#2a5a35" opacity=".85"><use href="#leaf" transform="translate(120 330) rotate(-35) scale(1.3)"/><use href="#leaf" transform="translate(1080 260) rotate(40) scale(1.4)"/></g>
+<g fill="#1e4429" opacity=".9"><use href="#leaf" transform="translate(600 140) rotate(8) scale(1.1)"/><use href="#leaf" transform="translate(250 780) rotate(-70) scale(1.5)"/><use href="#leaf" transform="translate(980 800) rotate(65) scale(1.3)"/></g>
+<g fill="#173820" opacity=".9"><use href="#leaf" transform="translate(-20 80) rotate(-110) scale(1.2)"/><use href="#leaf" transform="translate(1220 640) rotate(120) scale(1.2)"/></g></svg>
+</div>
+<div id="app"></div>
+
+<script>
+/* ===== Helper ===== */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); // sanitasi input
+const P = {
+  leaf:'<path d="M5 19C5 10 10 5 20 5c0 10-5 15-14 15"/><path d="M5 19c3-5 6-8 10-10"/>',
+  user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/>',
+  mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>', trash:'<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  out:'<path d="M9 4H5v16h4M16 8l4 4-4 4M20 12H9"/>', clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  note:'<path d="M5 3h10l4 4v14H5z"/><path d="M9 12h6M9 16h6"/>', check:'<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',
+  alert:'<circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/>', edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/>'
+};
+const ic = (n, s=20) => `<svg class="ic" width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${P[n]}</svg>`;
+const field = (i, type, name, label, val='', extra='') =>
+  `<label class="field"><span class="lbl">${label}</span><span class="inp">${ic(i,18)}<input type="${type}" name="${name}" value="${esc(val)}" ${extra}></span></label>`;
+const msgs = (list, type='error') => list.map(m => `<div class="alert ${type}" role="alert">${ic(type==='error'?'alert':'check',18)}<span>${esc(m)}</span></div>`).join('');
+
+/* ===== Penyimpanan (localStorage sebagai pengganti file JSON) ===== */
+const DB = {
+  get(){ try { return JSON.parse(localStorage.getItem('jh_users')) || []; } catch { return []; } },
+  set(u){ localStorage.setItem('jh_users', JSON.stringify(u)); },
+  byEmail(e, except){ return this.get().find(u => u.email.toLowerCase() === e.toLowerCase() && u.id !== except); },
+  byId(id){ return this.get().find(u => u.id === id); },
+  update(id, fn){ const a = this.get(); const u = a.find(x => x.id === id); if (u) fn(u); this.set(a); }
+};
+const rnd = n => [...crypto.getRandomValues(new Uint8Array(n))].map(x => x.toString(16).padStart(2,'0')).join('');
+const sha = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(x => x.toString(16).padStart(2,'0')).join('');
+const hashPw = (pw, salt) => sha(salt + ':' + pw);
+
+/* ===== Session & Remember Me (cookie, dengan cadangan localStorage) ===== */
+const getCookie = n => (document.cookie.split('; ').find(c => c.startsWith(n + '=')) || '').split('=').slice(1).join('=');
+async function setRemember(id){
+  const tok = rnd(32), exp = Date.now() + 30*864e5;
+  DB.update(id, u => { u.rememberHash = null; });
+  const h = await sha(tok); DB.update(id, u => { u.rememberHash = h; u.rememberExp = exp; });
+  const val = id + ':' + tok;
+  try { document.cookie = `remember=${val}; expires=${new Date(exp).toUTCString()}; path=/; SameSite=Lax`; } catch {}
+  localStorage.setItem('jh_remember', val);
+}
+function clearRemember(id){
+  if (id) DB.update(id, u => { delete u.rememberHash; delete u.rememberExp; });
+  try { document.cookie = 'remember=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/'; } catch {}
+  localStorage.removeItem('jh_remember');
+}
+async function currentUser(){
+  const uid = sessionStorage.getItem('jh_uid');
+  if (uid) return DB.byId(uid) || null;
+  const val = getCookie('remember') || localStorage.getItem('jh_remember') || '';
+  const [id, tok] = [val.split(':')[0], val.split(':').slice(1).join(':')];
+  const u = id && DB.byId(id);
+  if (u && u.rememberHash && u.rememberExp > Date.now() && u.rememberHash === await sha(tok)) { sessionStorage.setItem('jh_uid', u.id); return u; }
+  if (val) clearRemember();
+  return null;
+}
+
+/* ===== Router sederhana ===== */
+let flashMsg = null, errs = [], keep = {};
+const go = view => { if (location.hash.slice(1) === view) render(); else location.hash = view; };
+const flash = (t, m) => flashMsg = [t, m];
+const takeFlash = () => { const f = flashMsg; flashMsg = null; return f ? msgs([f[1]], f[0]) : ''; };
+const app = document.getElementById('app');
+
+async function render(){
+  const user = await currentUser();
+  let view = (location.hash || '#login').slice(1);
+  const guest = ['login','register'];
+  if (!user && !guest.includes(view)) { flash('error','Silakan login terlebih dahulu untuk membuka halaman ini.'); view = 'login'; history.replaceState(null,'','#login'); }
+  if (user && guest.includes(view)) { view = 'dashboard'; history.replaceState(null,'','#dashboard'); }
+  ({ login:vLogin, register:vRegister, dashboard:vDash, profile:vProfile })[view](user);
+  errs = []; keep = {};
+}
+
+const topbar = u => `<header class="topbar"><button data-go="dashboard" class="brand">${ic('leaf',22)}<span>Jadwal Harian</span></button>
+<nav><button data-go="dashboard">${ic('cal',18)}<span>Jadwal</span></button><button data-go="profile">${ic('user',18)}<span>${esc(u.name)}</span></button>
+<button id="logout">${ic('out',18)}<span>Keluar</span></button></nav></header>`;
+
+/* ===== Login ===== */
+function vLogin(){
+  app.innerHTML = `<div class="center"><main class="card"><div class="ttl-box">${ic('leaf',34)}<h1>Masuk</h1><p>Lihat dan atur jadwal mingguan Anda.</p></div>
+  ${takeFlash()}${msgs(errs)}
+  <form id="f" novalidate>${field('mail','email','email','Email',keep.email||'','autocomplete="email" required')}
+  ${field('lock','password','password','Password','','autocomplete="current-password" required')}
+  <label class="check"><input type="checkbox" name="remember"><span>Ingat saya selama 30 hari</span></label>
+  <button class="btn" type="submit">Login</button></form>
+  <p class="alt">Belum punya akun? <a data-go="register">Daftar</a></p></main></div>`;
+  f.onsubmit = async ev => {
+    ev.preventDefault();
+    const d = new FormData(f), email = d.get('email').trim(), pw = d.get('password'); errs = []; keep = { email };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errs.push('Format email tidak valid.');
+    if (!pw) errs.push('Password wajib diisi.');
+    if (!errs.length) {
+      const u = DB.byEmail(email);
+      if (u && u.password === await hashPw(pw, u.salt)) {
+        sessionStorage.setItem('jh_uid', u.id);
+        if (d.get('remember')) await setRemember(u.id);
+        flash('success', 'Selamat datang kembali, ' + u.name + '.'); return go('dashboard');
+      }
+      errs.push('Email atau password salah.');
+    }
+    vLogin();
+  };
+}
+
+/* ===== Register ===== */
+function vRegister(){
+  app.innerHTML = `<div class="center"><main class="card"><div class="ttl-box">${ic('leaf',34)}<h1>Buat Akun</h1><p>Susun kegiatan mingguan Anda dengan rapi.</p></div>
+  ${msgs(errs)}
+  <form id="f" novalidate>${field('user','text','name','Nama lengkap',keep.name||'','autocomplete="name" required')}
+  ${field('mail','email','email','Email',keep.email||'','autocomplete="email" required')}
+  ${field('lock','password','password','Password','','autocomplete="new-password" required')}
+  ${field('lock','password','password2','Ulangi password','','autocomplete="new-password" required')}
+  <button class="btn" type="submit">Daftar</button></form>
+  <p class="alt">Sudah punya akun? <a data-go="login">Login</a></p></main></div>`;
+  f.onsubmit = async ev => {
+    ev.preventDefault();
+    const d = new FormData(f), name = d.get('name').trim(), email = d.get('email').trim(), pw = d.get('password'); errs = []; keep = { name, email };
+    if (name.length < 2 || name.length > 50) errs.push('Nama harus 2 sampai 50 karakter.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errs.push('Format email tidak valid.');
+    else if (DB.byEmail(email)) errs.push('Email sudah terdaftar. Gunakan email lain atau login.');
+    if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) errs.push('Password minimal 8 karakter dan mengandung huruf serta angka.');
+    if (pw !== d.get('password2')) errs.push('Konfirmasi password tidak sama.');
+    if (errs.length) return vRegister();
+    const salt = rnd(8), users = DB.get();
+    users.push({ id: rnd(6), name, email, salt, password: await hashPw(pw, salt), createdAt: new Date().toISOString(),
+      schedule: { senin:[], selasa:[], rabu:[], kamis:[], jumat:[], sabtu:[] }, notes: '' });
+    DB.set(users); flash('success', 'Registrasi berhasil. Silakan login dengan akun Anda.'); go('login');
+  };
+}
+
+/* ===== Dashboard ===== */
+const DAYS = { senin:'Senin', selasa:'Selasa', rabu:'Rabu', kamis:'Kamis', jumat:'Jumat', sabtu:'Sabtu' };
+const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function isoWeek(d){ d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate())); const n = d.getUTCDay() || 7; d.setUTCDate(d.getUTCDate() + 4 - n);
+  return Math.ceil(((d - Date.UTC(d.getUTCFullYear(),0,1)) / 864e5 + 1) / 7); }
+
+function vDash(u){
+  const now = new Date(), today = Object.keys(DAYS)[(now.getDay() + 6) % 7];
+  app.innerHTML = `${topbar(u)}<main class="wrap">${takeFlash()}
+  <section class="hero"><h1>Kegiatan Mingguan</h1><div class="meta">
+    <div class="pill"><span>Minggu ke-</span><strong>${isoWeek(now)}</strong></div>
+    <div class="pill"><span>Bulan</span><strong>${MONTHS[now.getMonth()]} ${now.getFullYear()}</strong></div></div></section>
+  <section class="week">${Object.entries(DAYS).map(([k, label]) => {
+    const items = (u.schedule[k] || []);
+    return `<article class="day${k === today ? ' today' : ''}"><h2 class="tab">${label}</h2>
+    <ul class="items">${items.length ? items.map(i => `<li><span class="time">${ic('clock',14)}${esc(i.time)}</span><span class="ttl">${esc(i.title)}</span>
+      <button class="icon-btn" data-del="${k}:${esc(i.id)}" aria-label="Hapus ${esc(i.title)}">${ic('trash',16)}</button></li>`).join('') : '<li class="empty">Belum ada kegiatan.</li>'}</ul>
+    <form class="add" data-day="${k}"><input type="time" name="time" aria-label="Jam" required><input type="text" name="title" placeholder="Kegiatan baru" maxlength="80" aria-label="Kegiatan" required>
+    <button class="icon-btn solid" type="submit" aria-label="Tambah kegiatan">${ic('plus',18)}</button></form></article>`; }).join('')}</section>
+  <section class="notes"><form id="nf"><label for="notes">${ic('note',18)} Catatan</label>
+    <textarea id="notes" rows="3" maxlength="500" placeholder="Tulis catatan minggu ini">${esc(u.notes || '')}</textarea>
+    <button class="btn small" type="submit">Simpan catatan</button></form></section></main>`;
+
+  document.querySelectorAll('.add').forEach(form => form.onsubmit = ev => {
+    ev.preventDefault();
+    const d = new FormData(form), day = form.dataset.day, time = d.get('time'), title = d.get('title').trim();
+    if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) flash('error', 'Jam harus diisi dengan format yang benar.');
+    else if (!title || title.length > 80) flash('error', 'Kegiatan wajib diisi, maksimal 80 karakter.');
+    else { DB.update(u.id, x => { x.schedule[day].push({ id: rnd(4), time, title }); x.schedule[day].sort((a,b) => a.time.localeCompare(b.time)); });
+      flash('success', 'Kegiatan ditambahkan ke hari ' + DAYS[day] + '.'); }
+    render();
+  });
+  document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => {
+    const [day, id] = b.dataset.del.split(':');
+    DB.update(u.id, x => { x.schedule[day] = x.schedule[day].filter(i => i.id !== id); });
+    flash('success', 'Kegiatan dihapus.'); render();
+  });
+  nf.onsubmit = ev => { ev.preventDefault(); const t = notes.value.trim().slice(0, 500);
+    DB.update(u.id, x => { x.notes = t; }); flash('success', 'Catatan disimpan.'); render(); };
+}
+
+/* ===== Edit profil ===== */
+function vProfile(u){
+  app.innerHTML = `${topbar(u)}<main class="wrap narrow"><div class="card flat"><div class="ttl-box">${ic('edit',30)}<h1>Edit Profil</h1>
+  <p>Akun dibuat ${new Date(u.createdAt).toLocaleDateString('id-ID')}</p></div>${takeFlash()}${msgs(errs)}
+  <form id="f" novalidate>${field('user','text','name','Nama lengkap',keep.name ?? u.name,'required')}
+  ${field('mail','email','email','Email',keep.email ?? u.email,'required')}
+  <fieldset><legend>Ganti password (opsional)</legend>
+  ${field('lock','password','current','Password saat ini','','autocomplete="current-password"')}
+  ${field('lock','password','password','Password baru','','autocomplete="new-password"')}
+  ${field('lock','password','password2','Ulangi password baru','','autocomplete="new-password"')}</fieldset>
+  <button class="btn" type="submit">Simpan perubahan</button></form></div></main>`;
+  f.onsubmit = async ev => {
+    ev.preventDefault();
+    const d = new FormData(f), name = d.get('name').trim(), email = d.get('email').trim(), cur = d.get('current'), pw = d.get('password'), pw2 = d.get('password2');
+    errs = []; keep = { name, email };
+    if (name.length < 2 || name.length > 50) errs.push('Nama harus 2 sampai 50 karakter.');
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) errs.push('Format email tidak valid.');
+    else if (DB.byEmail(email, u.id)) errs.push('Email sudah dipakai akun lain.');
+    let newHash = null;
+    if (cur || pw || pw2) {
+      if (u.password !== await hashPw(cur, u.salt)) errs.push('Password saat ini salah.');
+      if (pw.length < 8 || !/[A-Za-z]/.test(pw) || !/\d/.test(pw)) errs.push('Password baru minimal 8 karakter dan mengandung huruf serta angka.');
+      if (pw !== pw2) errs.push('Konfirmasi password baru tidak sama.');
+      if (!errs.length) newHash = await hashPw(pw, u.salt);
+    }
+    if (errs.length) return vProfile(u);
+    DB.update(u.id, x => { x.name = name; x.email = email; if (newHash) x.password = newHash; });
+    flash('success', 'Profil berhasil diperbarui.'); keep = {}; render();
+  };
+}
+
+/* ===== Event global: navigasi & logout ===== */
+document.addEventListener('click', async e => {
+  const g = e.target.closest('[data-go]'); if (g) return go(g.dataset.go);
+  if (e.target.closest('#logout')) {
+    const id = sessionStorage.getItem('jh_uid'); clearRemember(id); sessionStorage.clear(); // setara session_destroy()
+    flash('success', 'Anda telah keluar dari akun.'); go('login');
+  }
+});
+addEventListener('hashchange', render);
+render();
+</script>
+</body>
+</html>
